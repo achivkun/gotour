@@ -2,27 +2,22 @@ package main
 
 import (
 	"errors"
-	"fmt"
 
 	"golang.org/x/tour/tree"
 )
 
-func FindRemMin(t *tree.Tree, parent *tree.Tree) (int, error, *tree.Tree, *tree.Tree) {
-	fmt.Println(t)
-	var retVal int = 0
+func FindRemMin(t *tree.Tree, parent *tree.Tree) (int, error, *tree.Tree) {
+	// fmt.Println(t)
 	var err error = nil
 	var retParent *tree.Tree = nil
-	var retRoot *tree.Tree = nil
 
 	if t == nil {
 		println("Error")
 		err = errors.New("empty tree")
-		return retVal, err, retRoot, retParent
+		return 0, err, retParent
 	}
 
 	if t.Left == nil {
-		retVal = t.Value
-
 		if parent != nil {
 			parent.Left = nil
 		}
@@ -33,8 +28,7 @@ func FindRemMin(t *tree.Tree, parent *tree.Tree) (int, error, *tree.Tree, *tree.
 			}
 		}
 
-		retRoot = parent
-		return retVal, err, retRoot, retParent
+		return t.Value, err, retParent
 	} else {
 		return FindRemMin(t.Left, t)
 	}
@@ -47,11 +41,13 @@ func Walk(t *tree.Tree, ch chan int) {
 
 	var minVal int
 	var err error
-	var parent *tree.Tree = nil
+	// var parent *tree.Tree = nil
+	count := 0
 	for {
-		minVal, err, t, parent = FindRemMin(t, parent)
+		count += 1
+		minVal, err, _ = FindRemMin(t, nil)
 		println("min val =", minVal)
-		if err != nil {
+		if err != nil || count > 20 {
 			break
 		}
 	}
