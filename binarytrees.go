@@ -1,86 +1,51 @@
 package main
 
 import (
-	"errors"
-
 	"golang.org/x/tour/tree"
 )
-
-func FindRemMin(t *tree.Tree, parent *tree.Tree) (int, error, *tree.Tree) {
-	// fmt.Println(t)
-	var err error = nil
-	var retParent *tree.Tree = nil
-
-	if t == nil {
-		println("Error")
-		err = errors.New("empty tree")
-		return 0, err, retParent
-	}
-
-	if t.Left == nil {
-		if parent != nil {
-			parent.Left = nil
-		} else {
-			if t.Right == nil {
-				err = errors.New("last elem handled")
-			}
-			tmp_val := t.Value
-			t = t.Right
-			return tmp_val, err, retParent
-		}
-
-		if t.Right != nil {
-			if parent != nil {
-				parent.Left = t.Right
-			}
-		}
-
-		return t.Value, err, retParent
-	} else {
-		return FindRemMin(t.Left, t)
-	}
-}
 
 // Walk walks the tree t sending all values
 // from the tree to the channel ch.
 func Walk(t *tree.Tree, ch chan int) {
-	println("start")
-
-	var minVal int
-	var err error
-	// var parent *tree.Tree = nil
-	count := 0
-	for {
-		count += 1
-		minVal, err, _ = FindRemMin(t, nil)
-		println("min val =", minVal)
-		if err != nil || count > 20 {
-			break
-		}
+	if t.Left != nil {
+		Walk(t.Left, ch)
+	}
+	// println("min = ", t.Value)
+	ch <- t.Value
+	if t.Right != nil {
+		Walk(t.Right, ch)
 	}
 }
 
 // Same determines whether the trees
 // t1 and t2 contain the same values.
 func Same(t1, t2 *tree.Tree) bool {
-	ch := make(chan int)
-	go Walk(t1, ch)
-	go Walk(t2, ch)
-	v1, v2 := <-ch, <-ch
+	ch1 := make(chan int, 10)
+	ch2 := make(chan int, 10)
+	go Walk(t1, ch1)
+	go Walk(t2, ch2)
 
-	if v1 != v2 {
-		return true
+	for i := 0; i < 10; i++ {
+		v1, v2 := <-ch1, <-ch2
+		// println(v1, " ", v2)
+		if v1 != v2 {
+			println("Not equal")
+			return false
+		}
 	}
 
-	return false
+	println("Equal")
+	return true
 }
 
 func main() {
-	ch := make(chan int, 10)
-	Walk(tree.New(1), ch)
-	for i := 0; i < 10; i++ {
-		ch <- i
-	}
+	Same(tree.New(1), tree.New(1))
+	Same(tree.New(1), tree.New(2))
+	// ch := make(chan int, 10)
+	// go Walk(tree.New(1), ch)
+	// for i := 0; i < 10; i++ {
+	// 	println(<-ch)
+	// }
 	//	println(Same(tree.New(1), tree.New(1)))
 	//	println(Same(tree.New(1), tree.New(2)))
 }
