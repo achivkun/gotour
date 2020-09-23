@@ -20,6 +20,13 @@ func FindRemMin(t *tree.Tree, parent *tree.Tree) (int, error, *tree.Tree) {
 	if t.Left == nil {
 		if parent != nil {
 			parent.Left = nil
+		} else {
+			if t.Right == nil {
+				err = errors.New("last elem handled")
+			}
+			tmp_val := t.Value
+			t = t.Right
+			return tmp_val, err, retParent
 		}
 
 		if t.Right != nil {
@@ -70,9 +77,7 @@ func Same(t1, t2 *tree.Tree) bool {
 
 func main() {
 	ch := make(chan int, 10)
-	println("before")
 	Walk(tree.New(1), ch)
-	println("after")
 	for i := 0; i < 10; i++ {
 		ch <- i
 	}
